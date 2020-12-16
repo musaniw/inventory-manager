@@ -17,8 +17,18 @@ POST api/inventory/record
 #### Add a record
 ```
 POST api/inventory/record
+{
+  "name": "Nike Vapor Zoom",
+  "category": "CLOTHES",
+  "subCategory": "SHOES",
+  "quantity": 50
+}
 ```
 #### Updates the specified quantity(int) of the specified product (long)
 ```
 PATCH api/inveotory/record
+{
+  "id": 1,
+  "quantity": 50
+}
 ```
