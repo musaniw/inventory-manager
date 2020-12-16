@@ -12,7 +12,7 @@ The service runs by default on port 8080
 ### Inventory
 #### List all records
 ```
-POST api/inventory/record
+GET api/inventory/record
 ```
 #### Add a record
 ```
