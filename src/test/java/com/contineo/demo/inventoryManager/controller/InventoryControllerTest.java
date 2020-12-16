@@ -1,37 +1,34 @@
 package com.contineo.demo.inventoryManager.controller;
 
-import com.contineo.demo.inventoryManager.model.Category;
 import com.contineo.demo.inventoryManager.model.InventoryRecord;
 import com.contineo.demo.inventoryManager.model.InventoryResponse;
-import com.contineo.demo.inventoryManager.model.SubCategory;
 import com.contineo.demo.inventoryManager.service.InventoryService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigInteger;
 import java.util.Collections;
-import java.util.Map;
 
+import static com.contineo.demo.inventoryManager.utils.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = {InventoryController.class})
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class InventoryControllerTest {
 
     @Autowired
@@ -42,7 +39,7 @@ public class InventoryControllerTest {
 
     @Test
     public void testInventoryGetCall() throws Exception {
-        InventoryRecord record = new InventoryRecord("Nike Vapor Zoom", Category.CLOTHES, SubCategory.SHOES, BigInteger.ONE);
+        InventoryRecord record = createInventoryRecord();
         when(inventoryService.getAll()).thenReturn(Collections.singletonList(record));
 
         MvcResult mvcResult = this.mockMvc
@@ -58,16 +55,16 @@ public class InventoryControllerTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testInventoryPostCall() throws Exception {
-        InventoryRecord record = new InventoryRecord("Nike Vapor Zoom", Category.CLOTHES, SubCategory.SHOES, BigInteger.ONE);
+        InventoryRecord record = createInventoryRecord();
         when(inventoryService.save(any())).thenReturn(new InventoryResponse(record));
 
         this.mockMvc
                 .perform(post("/api/inventory/record")
                         .content("{\n" +
-                        "    \"name\" : \"Nike Vapor Zoom\",\n" +
-                        "    \"category\" : \"CLOTHES\",\n" +
-                        "    \"subCategory\" : \"SHOES\",\n" +
-                        "    \"quantity\" : 1\n" +
+                        "    \"name\" : \"" + INVENTORY_NAME + "\",\n" +
+                        "    \"category\" : \"" + INVENTORY_CATEGORY + "\",\n" +
+                        "    \"subCategory\" : \"" + INVENTORY_SUBCATEGORY + "\",\n" +
+                        "    \"quantity\" : " + INVENTORY_QUANTITY + "\n" +
                         "}")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -75,16 +72,16 @@ public class InventoryControllerTest {
         ArgumentCaptor<InventoryRecord> bodyCaptor = forClass(InventoryRecord.class);
 
         verify(inventoryService).save(bodyCaptor.capture());
-        assertEquals(bodyCaptor.getValue().getName(), "Nike Vapor Zoom");
-        assertEquals(bodyCaptor.getValue().getCategory(), Category.CLOTHES);
-        assertEquals(bodyCaptor.getValue().getSubCategory(), SubCategory.SHOES);
-        assertEquals(bodyCaptor.getValue().getQuantity(), BigInteger.ONE);
+        assertEquals(bodyCaptor.getValue().getName(), INVENTORY_NAME);
+        assertEquals(bodyCaptor.getValue().getCategory(), INVENTORY_CATEGORY);
+        assertEquals(bodyCaptor.getValue().getSubCategory(), INVENTORY_SUBCATEGORY);
+        assertEquals(bodyCaptor.getValue().getQuantity(), INVENTORY_QUANTITY);
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void testInventoryPatchCall() throws Exception {
-        InventoryRecord record = new InventoryRecord(1L, "Nike Vapor Zoom", Category.CLOTHES, SubCategory.SHOES, BigInteger.TEN);
+        InventoryRecord record = createInventoryRecord();
         when(inventoryService.update(any())).thenReturn(new InventoryResponse(record));
 
         this.mockMvc

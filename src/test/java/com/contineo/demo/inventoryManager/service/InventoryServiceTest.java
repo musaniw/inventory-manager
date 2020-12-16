@@ -2,6 +2,7 @@ package com.contineo.demo.inventoryManager.service;
 
 import com.contineo.demo.inventoryManager.model.*;
 import com.contineo.demo.inventoryManager.repository.InventoryRepository;
+import com.contineo.demo.inventoryManager.utils.TestUtils;
 import com.contineo.demo.inventoryManager.validators.CategoryValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,9 +11,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
+import static com.contineo.demo.inventoryManager.utils.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -33,9 +37,20 @@ class InventoryServiceTest {
     }
 
     @Test
-    void testValidProductIsSavedSuccessfully() {
-        InventoryRecord newRecord = new InventoryRecord("Nike Vapor Zoom", Category.CLOTHES, SubCategory.SHOES, BigInteger.ONE);
-        InventoryRecord expectedRecord = new InventoryRecord(1L, "Nike Vapor Zoom", Category.CLOTHES, SubCategory.SHOES, BigInteger.ONE);
+    void testAllRecordsAreReturnedOnGet() {
+        List<InventoryRecord> existingRecords = Arrays.asList(createInventoryRecord(), createInventoryRecord());
+        when(repository.findAll()).thenReturn(existingRecords);
+
+        List<InventoryRecord> records = inventoryService.getAll();
+
+        verify(repository, times(1)).findAll();
+        assertEquals(existingRecords, records);
+    }
+
+    @Test
+    void testValidRecordProcessedSuccessfullyOnSave() {
+        InventoryRecord newRecord = new InventoryRecord(INVENTORY_NAME, INVENTORY_CATEGORY, INVENTORY_SUBCATEGORY, INVENTORY_QUANTITY);
+        InventoryRecord expectedRecord = createInventoryRecord();
 
         when(categoryValidator.validate(newRecord)).thenReturn(Collections.emptyList());
         when(repository.save(newRecord)).thenReturn(expectedRecord);
@@ -49,8 +64,8 @@ class InventoryServiceTest {
     }
 
     @Test
-    void testInValidProductReturnsValidationFailures() {
-        InventoryRecord newRecord = new InventoryRecord("Nike Vapor Zoom", Category.CLOTHES, SubCategory.SHOES, BigInteger.ONE);
+    void testInValidRecordReturnsValidationFailuresOnSave() {
+        InventoryRecord newRecord = createInventoryRecord();
 
         when(categoryValidator.validate(newRecord)).thenReturn(Collections.singletonList("Error"));
         InventoryResponse inventoryResponse = inventoryService.save(newRecord);
@@ -63,10 +78,10 @@ class InventoryServiceTest {
     }
 
     @Test
-    void testQuantityIsUpdatedOnPatch() {
-        InventoryRecord updateRecord = new InventoryRecord(1L, null, null, null, BigInteger.TWO);
-        InventoryRecord existingRecord = new InventoryRecord(1L, "Nike Vapor Zoom", Category.CLOTHES, SubCategory.SHOES, BigInteger.ONE);
-        InventoryRecord updatedRecord = new InventoryRecord(1L, "Nike Vapor Zoom", Category.CLOTHES, SubCategory.SHOES, BigInteger.TWO);
+    void testQuantityIsUpdatedOnUpdate() {
+        InventoryRecord updateRecord = new InventoryRecord(INVENTORY_ID, null, null, null, BigInteger.TWO);
+        InventoryRecord existingRecord = TestUtils.createInventoryRecord();
+        InventoryRecord updatedRecord = new InventoryRecord(1L, INVENTORY_NAME, INVENTORY_CATEGORY, INVENTORY_SUBCATEGORY, BigInteger.TWO);
 
         when(repository.findById(1L)).thenReturn(Optional.of(existingRecord));
         when(repository.save(updatedRecord)).thenReturn(updatedRecord);
@@ -79,10 +94,10 @@ class InventoryServiceTest {
     }
 
     @Test
-    void testNoOtherFieldExceptQuantityIsUpdatedOnPatch() {
-        InventoryRecord updateRecord = new InventoryRecord(1L,"Nike Air Max",null, null, BigInteger.TWO);
-        InventoryRecord existingRecord = new InventoryRecord(1L,"Nike Vapor Zoom", Category.CLOTHES, SubCategory.SHOES, BigInteger.ONE);
-        InventoryRecord updatedRecord = new InventoryRecord(1L, "Nike Vapor Zoom", Category.CLOTHES, SubCategory.SHOES, BigInteger.TWO);
+    void testNoOtherFieldExceptQuantityIsUpdated() {
+        InventoryRecord updateRecord = new InventoryRecord(INVENTORY_ID,"Nike Air Max",null, null, BigInteger.TWO);
+        InventoryRecord existingRecord = TestUtils.createInventoryRecord();
+        InventoryRecord updatedRecord = new InventoryRecord(1L, INVENTORY_NAME, INVENTORY_CATEGORY, INVENTORY_SUBCATEGORY, BigInteger.TWO);
 
         when(repository.findById(1L)).thenReturn(Optional.of(existingRecord));
         when(repository.save(existingRecord)).thenReturn(updatedRecord);
@@ -92,5 +107,34 @@ class InventoryServiceTest {
         verify(repository, times(1)).save(updatedRecord);
         assertEquals(updatedRecord, inventoryResponse.getRecord());
         assertEquals(InventoryStatus.SUCCESS, inventoryResponse.getStatus());
+    }
+
+    @Test
+    void testValidationFailuresReturnedIfQuantityNotProvidedOnUpdate() {
+        InventoryRecord updateRecord = new InventoryRecord(INVENTORY_ID,"Nike Air Max",null, null, null);
+        InventoryRecord existingRecord = TestUtils.createInventoryRecord();
+
+        when(repository.findById(1L)).thenReturn(Optional.of(existingRecord));
+
+        InventoryResponse inventoryResponse = inventoryService.update(updateRecord);
+
+        verify(repository, never()).save(any());
+        assertEquals(updateRecord, inventoryResponse.getRecord());
+        assertEquals(InventoryStatus.FAILURE, inventoryResponse.getStatus());
+        assertFalse(inventoryResponse.getValidationFailures().isEmpty());
+    }
+
+    @Test
+    void testValidationFailuresReturnedIfNoExistingRecordOnUpdate() {
+        InventoryRecord updateRecord = new InventoryRecord(INVENTORY_ID,"Nike Air Max",null, null, null);
+
+        when(repository.findById(1L)).thenReturn(Optional.empty());
+
+        InventoryResponse inventoryResponse = inventoryService.update(updateRecord);
+
+        verify(repository, never()).save(any());
+        assertEquals(updateRecord, inventoryResponse.getRecord());
+        assertEquals(InventoryStatus.FAILURE, inventoryResponse.getStatus());
+        assertFalse(inventoryResponse.getValidationFailures().isEmpty());
     }
 }

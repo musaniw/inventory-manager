@@ -46,9 +46,13 @@ public class InventoryService {
 
     public InventoryResponse update(InventoryRecord updateRecord) {
         Optional<InventoryRecord> existingRecord = inventoryRepository.findById(updateRecord.getId());
-        if (existingRecord.isPresent() && updateRecord.getQuantity() != null) {
-            existingRecord.get().setQuantity(updateRecord.getQuantity());
-            return new InventoryResponse(inventoryRepository.save(existingRecord.get()));
+        if (existingRecord.isPresent()) {
+            if(updateRecord.getQuantity() != null) {
+                existingRecord.get().setQuantity(updateRecord.getQuantity());
+                return new InventoryResponse(inventoryRepository.save(existingRecord.get()));
+            } else {
+                return new InventoryResponse(updateRecord, FAILURE, Collections.singletonList("Only quantity can be updated for id " + updateRecord.getId()));
+            }
         }
         return new InventoryResponse(updateRecord, FAILURE, Collections.singletonList("Could not find existing record for id " + updateRecord.getId()));
     }
