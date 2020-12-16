@@ -2,6 +2,7 @@ package com.contineo.demo.inventoryManager.controller;
 
 import com.contineo.demo.inventoryManager.model.InventoryRecord;
 import com.contineo.demo.inventoryManager.model.InventoryResponse;
+import com.contineo.demo.inventoryManager.model.InventoryStatus;
 import com.contineo.demo.inventoryManager.service.InventoryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +51,7 @@ public class InventoryControllerTest {
         String responseString = mvcResult.getResponse().getContentAsString();
 
         assertTrue(responseString.contains(record.getName()));
+        assertTrue(responseString.contains(InventoryStatus.SUCCESS.name()));
     }
 
     @Test
@@ -58,17 +60,19 @@ public class InventoryControllerTest {
         InventoryRecord record = createInventoryRecord();
         when(inventoryService.save(any())).thenReturn(new InventoryResponse(record));
 
-        this.mockMvc
+        MvcResult mvcResult = this.mockMvc
                 .perform(post("/api/inventory/record")
                         .content("{\n" +
-                        "    \"name\" : \"" + INVENTORY_NAME + "\",\n" +
-                        "    \"category\" : \"" + INVENTORY_CATEGORY + "\",\n" +
-                        "    \"subCategory\" : \"" + INVENTORY_SUBCATEGORY + "\",\n" +
-                        "    \"quantity\" : " + INVENTORY_QUANTITY + "\n" +
-                        "}")
+                                "    \"name\" : \"" + INVENTORY_NAME + "\",\n" +
+                                "    \"category\" : \"" + INVENTORY_CATEGORY + "\",\n" +
+                                "    \"subCategory\" : \"" + INVENTORY_SUBCATEGORY + "\",\n" +
+                                "    \"quantity\" : " + INVENTORY_QUANTITY + "\n" +
+                                "}")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andReturn();
 
+        String responseString = mvcResult.getResponse().getContentAsString();
         ArgumentCaptor<InventoryRecord> bodyCaptor = forClass(InventoryRecord.class);
 
         verify(inventoryService).save(bodyCaptor.capture());
@@ -76,6 +80,9 @@ public class InventoryControllerTest {
         assertEquals(bodyCaptor.getValue().getCategory(), INVENTORY_CATEGORY);
         assertEquals(bodyCaptor.getValue().getSubCategory(), INVENTORY_SUBCATEGORY);
         assertEquals(bodyCaptor.getValue().getQuantity(), INVENTORY_QUANTITY);
+
+        assertTrue(responseString.contains(record.getName()));
+        assertTrue(responseString.contains(InventoryStatus.SUCCESS.name()));
     }
 
     @Test
@@ -84,19 +91,24 @@ public class InventoryControllerTest {
         InventoryRecord record = createInventoryRecord();
         when(inventoryService.update(any())).thenReturn(new InventoryResponse(record));
 
-        this.mockMvc
+        MvcResult mvcResult = this.mockMvc
                 .perform(patch("/api/inventory/record")
                         .content("{\n" +
                                 "    \"id\" : 1,\n" +
                                 "    \"quantity\" : 10\n" +
                                 "}")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andReturn();
 
+        String responseString = mvcResult.getResponse().getContentAsString();
         ArgumentCaptor<InventoryRecord> bodyCaptor = forClass(InventoryRecord.class);
 
         verify(inventoryService).update(bodyCaptor.capture());
         assertEquals(bodyCaptor.getValue().getId(), 1L);
         assertEquals(bodyCaptor.getValue().getQuantity(), BigInteger.TEN);
+
+        assertTrue(responseString.contains(record.getName()));
+        assertTrue(responseString.contains(InventoryStatus.SUCCESS.name()));
     }
 }

@@ -2,7 +2,6 @@ package com.contineo.demo.inventoryManager.service;
 
 import com.contineo.demo.inventoryManager.model.InventoryRecord;
 import com.contineo.demo.inventoryManager.model.InventoryResponse;
-import com.contineo.demo.inventoryManager.model.InventoryStatus;
 import com.contineo.demo.inventoryManager.repository.InventoryRepository;
 import com.contineo.demo.inventoryManager.validators.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.contineo.demo.inventoryManager.model.InventoryStatus.*;
+import static com.contineo.demo.inventoryManager.model.InventoryStatus.FAILURE;
+import static com.contineo.demo.inventoryManager.model.InventoryStatus.SUCCESS;
 
 @Service
 public class InventoryService {

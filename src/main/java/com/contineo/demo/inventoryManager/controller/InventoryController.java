@@ -1,19 +1,14 @@
 package com.contineo.demo.inventoryManager.controller;
 
-import com.contineo.demo.inventoryManager.model.Category;
 import com.contineo.demo.inventoryManager.model.InventoryRecord;
 import com.contineo.demo.inventoryManager.model.InventoryResponse;
-import com.contineo.demo.inventoryManager.model.SubCategory;
-import com.contineo.demo.inventoryManager.repository.InventoryRepository;
 import com.contineo.demo.inventoryManager.service.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigInteger;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/inventory")

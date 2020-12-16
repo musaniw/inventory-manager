@@ -1,6 +1,8 @@
 package com.contineo.demo.inventoryManager.service;
 
-import com.contineo.demo.inventoryManager.model.*;
+import com.contineo.demo.inventoryManager.model.InventoryRecord;
+import com.contineo.demo.inventoryManager.model.InventoryResponse;
+import com.contineo.demo.inventoryManager.model.InventoryStatus;
 import com.contineo.demo.inventoryManager.repository.InventoryRepository;
 import com.contineo.demo.inventoryManager.utils.TestUtils;
 import com.contineo.demo.inventoryManager.validators.CategoryValidator;
